@@ -26,11 +26,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.neuSep17.dto.Vehicle;
+import com.neuSep17.service.InventoryServiceAPI_Test;
 
 public class ImageSlideShow extends JPanel implements ActionListener {
-	private List<URL> urls = new ArrayList<>();
+	 private List<URL> urls = new ArrayList<>();
+	private ArrayList<Image> myimages = new ArrayList<>();
+	Vehicle vehicle;
 	private String[] buttonNames = { "first", "pre", "next", "last" };
 	private int currentImage = 0;
+	private int currIndex = 0;
 	private int width = 600, height = 550;
 	private JPanel buttonPanel = new JPanel();
 	
@@ -43,9 +47,9 @@ public class ImageSlideShow extends JPanel implements ActionListener {
 	JLabel title;
 	Map<Integer, ImageIcon> images = new HashMap<>();
 
-	public ImageSlideShow(Vehicle vehicle, String[] imageUrls) {
-
-		createComponents(vehicle, imageUrls);
+	public ImageSlideShow(Vehicle vehicle, ArrayList<Image> myimages) {
+		this.vehicle = vehicle;
+		createComponents(vehicle, myimages);
 		addComponents();
 		this.setVisible(true);
 	}
@@ -91,7 +95,8 @@ public class ImageSlideShow extends JPanel implements ActionListener {
 		gbl.setConstraints(buttonPanel, gbs);
 	}
 
-	private void createComponents(Vehicle vehicle, String[] imageUrls) {
+	private void createComponents(Vehicle vehicle, ArrayList<Image> myimages) {
+		
 		title = new JLabel();
 		imageLabel = new JLabel();
 
@@ -101,23 +106,23 @@ public class ImageSlideShow extends JPanel implements ActionListener {
 			buttons.put(button, buttonName);
 		}
 
-		for (String spec : imageUrls) {
-//			if (isImage(spec)) {
-//
-//			} else {
+//		for (String spec : imageUrls) {
+////			if (isImage(spec)) {
+////
+////			} else {
+////				spec = null;
+////			}
+//			if(!isImage(spec)){
 //				spec = null;
 //			}
-			if(!isImage(spec)){
-				spec = null;
-			}
-			try {
-				urls.add(new URL(spec));
-			} catch (MalformedURLException e) {
-				urls.add(null);
-			}
-		}
+//			try {
+//				urls.add(new URL(spec));
+//			} catch (MalformedURLException e) {
+//				urls.add(null);
+//			}
+//		}
 
-		loadImage();
+		loadImage(myimages);
         title.setText(vehicle.getCategory().toString());
         title.setForeground(Color.RED);
 //		title.setText(vehicle.getCategory() + " " + vehicle.getYear() + " " + vehicle.getMake() + " "
@@ -131,51 +136,78 @@ public class ImageSlideShow extends JPanel implements ActionListener {
 		
 	}
 
-	private void loadImage() {
-		URL url = urls.get(currentImage);
-		ImageIcon icon;
+	private void loadImage(ArrayList<Image> myimages) {
+		// URL url = urls.get(currentImage);
+		//ImageIcon icon;
 		BufferedImage img = null;
-		if (url != null) {
-//			icon = new ImageIcon(urls.get(currentImage));
-			icon = new ImageIcon(url);
-		} else {
-
-			try {
-				img = ImageIO.read(new File("src/com/neuSep17/ui/consumer/imagenotfound.jpg"));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			icon = new ImageIcon(img);
-
-		}
+//		if (url != null) {
+////			icon = new ImageIcon(urls.get(currentImage));
+//			icon = new ImageIcon(url);
+//		} else {
+//
+//			try {
+//				img = ImageIO.read(new File("src/com/neuSep17/ui/consumer/imagenotfound.jpg"));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			icon = new ImageIcon(img);
+//
+//		}
 		// ImageIcon icon=new ImageIcon(urls.get(currentImage));
-
+//		System.out.println("Size = " + myimages.size() + "   currIndex =" + currIndex);
+		ImageIcon icon=new ImageIcon(myimages.get(currIndex));
 		icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
 
-		if (!images.containsKey(currentImage)) {
-			images.put(currentImage, icon);
+		if (!images.containsKey(currIndex)) {
+			images.put(currIndex, icon);
 		}
-		imageLabel.setIcon(images.get(currentImage));
+		imageLabel.setIcon(images.get(currIndex));
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String name = buttons.get(e.getSource());
 		if (name.equals("next")) {
-			this.currentImage = (this.currentImage + 1) % this.urls.size();
+			// this.currIndex = (this.currIndex + 1) % this.urls.size();
+			this.currIndex = (this.currIndex + 1) % 3;
+			try {
+				myimages = InventoryServiceAPI_Test.getVehicleImage(vehicle.getBodyType());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
 		} else if (name.equals("pre")) {
-			this.currentImage = (this.currentImage - 1 + this.urls.size()) % this.urls.size();
+			// this.currIndex = (this.currIndex - 1 + this.urls.size()) % this.urls.size();
+			this.currIndex = (this.currIndex + 2) % 3;
+			try {
+				myimages = InventoryServiceAPI_Test.getVehicleImage(vehicle.getBodyType());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
 		} else if (name.equals("first")) {
-			this.currentImage = 0;
+			this.currIndex = 0;
+			try {
+				myimages = InventoryServiceAPI_Test.getVehicleImage(vehicle.getBodyType());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
 		} else if (name.equals("last")) {
-			this.currentImage = this.urls.size() - 1;
+			this.currIndex = 2;
+			try {
+				myimages = InventoryServiceAPI_Test.getVehicleImage(vehicle.getBodyType());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
 		}
-		loadImage();
+		loadImage(myimages);
 	}
 
 	private boolean isImage(String image_path) {
